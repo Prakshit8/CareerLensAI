@@ -8,7 +8,16 @@ from typing import Any
 import httpx
 import streamlit as st
 
-API_URL = os.getenv("CAREERLENS_API_URL", "http://127.0.0.1:8000").rstrip("/")
+def _get_api_url() -> str:
+    """Resolve the deployed backend URL from Streamlit Secrets or the environment."""
+    try:
+        secret_url = st.secrets.get("CAREERLENS_API_URL")
+    except (FileNotFoundError, KeyError):
+        secret_url = None
+    return (secret_url or os.getenv("CAREERLENS_API_URL", "http://127.0.0.1:8000")).rstrip("/")
+
+
+API_URL = _get_api_url()
 PAGES = [
     "Dashboard", "AI Job Search", "Recommended Jobs", "My Profile",
     "AI Career Assistant", "Saved Jobs", "Search History",
@@ -44,8 +53,8 @@ def api_request(method: str, path: str, **kwargs: Any) -> Any:
         raise RuntimeError(f"Request failed ({error.response.status_code}): {detail}") from error
     except (httpx.ConnectError, httpx.TimeoutException) as error:
         raise RuntimeError(
-            "The CareerLens backend is not reachable. Start it with "
-            "`uvicorn backend.app.main:app --reload`."
+            "The CareerLens backend is not reachable. Configure "
+            "`CAREERLENS_API_URL` for your deployed backend."
         ) from error
     if response.status_code == 204:
         return None

@@ -11,3 +11,4 @@ data/careerlens.db
 data/indexes/
 data/evaluation/reports/
 data/test-isolated.sqlite3
+.streamlit/secrets.toml

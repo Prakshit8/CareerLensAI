@@ -175,6 +175,32 @@ Docker exposes:
 
 SQLite and FAISS data are mounted under `data/`.
 
+## Streamlit Community Cloud
+
+Streamlit Community Cloud can host the Streamlit UI, but this project also needs a separately deployed FastAPI backend:
+
+1. Deploy the repository using a FastAPI-capable host such as Render, Railway, Azure App Service, or a VPS.
+2. Configure the backend with `DATABASE_URL=sqlite:///data/careerlens.db`, `GROQ_API_KEY`, `GROQ_MODEL`, and `EMBEDDING_MODEL`.
+3. Ensure the backend is public over HTTPS and its `/health` endpoint is reachable.
+4. In Streamlit Cloud, create a new app from this GitHub repository.
+5. Set the main file to `frontend/app.py`.
+6. In **App settings > Secrets**, add:
+
+```toml
+CAREERLENS_API_URL = "https://your-careerlens-api.example.com"
+```
+
+The public URL must include no trailing path. If the backend and frontend are deployed at different domains, the Streamlit server sends requests to that URL from the frontend process.
+
+For a public portfolio demo, use a persistent backend data source or volume:
+
+- SQLite is writable but filesystem storage can be ephemeral on managed hosts.
+- FAISS and Hugging Face caches may be recreated after restarts.
+- Seed the backend at first startup or attach persistent storage if deployment restarts must preserve profiles, memories, jobs, saves, and feedback.
+- Do not put `GROQ_API_KEY` or another secret in Streamlit app source code.
+
+When backend secrets are stored in Streamlit Cloud instead of the backend host, they will not reach FastAPI. Groq and database configuration belong on the FastAPI service.
+
 ## Example API Requests
 
 Search jobs:
