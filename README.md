@@ -1,122 +1,224 @@
 # CareerLens AI
 
-CareerLens AI is a local-first job discovery and recommendation portfolio application. It combines a FastAPI backend, SQLite persistence, BM25 keyword retrieval, CPU sentence embeddings with FAISS, explainable recommendations, persistent candidate preferences, an optional Groq tool-using assistant, and a Streamlit dashboard.
+CareerLens AI is a full-stack, local-first AI job discovery platform that combines keyword search, semantic retrieval, explainable ranking, persistent candidate memory, and an optional Groq-powered career assistant.
 
-> **Synthetic data notice:** the checked-in demo jobs are fictional examples for local development and evaluation, not real vacancies.
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?logo=streamlit&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-Database-003B57?logo=sqlite&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)
 
-## Features
+> **Portfolio demo:** The included 120 job records are clearly labeled synthetic listings. They are fictional examples for demonstration and evaluation, not real vacancies.
 
-- Idempotent CSV and JSON job ingestion with validation, stable IDs, source attribution, and batch reports.
-- Candidate profile editing, selectable-text PDF extraction, and transparent vocabulary-based skill detection.
-- Keyword, semantic, and hybrid search with filters, RRF metadata, and a visible fallback warning if dense retrieval is unavailable.
-- Weighted recommendations with match evidence, eligibility status, saved jobs, and persisted feedback.
-- SQLite-backed profile preferences, memories, conversations, and search history.
-- Optional Groq tool calling; profile, search, memory, recommendation, save, and feedback tools run through validated Python services. Core search does not require an LLM key.
-- Reproducible retrieval evaluation producing JSON/CSV reports.
-- Streamlit pages for dashboard, search, recommendations, profile, assistant, saved jobs, history, evaluation, and settings.
+## Key Features
 
-## Windows setup (CMD)
+- **Hybrid job search** - BM25 keyword retrieval combined with MiniLM embeddings and FAISS using Reciprocal Rank Fusion.
+- **Personalized recommendations** - Transparent weighted scoring across skills, experience, location, employment preferences, salary, and semantic relevance.
+- **Persistent memory** - Candidate profile, preferences, conversations, saved jobs, search history, and feedback stored in SQLite.
+- **Groq career agent** - Optional tool-calling assistant for search, profile updates, memories, recommendations, saved jobs, and feedback.
+- **Resume intake** - PDF text extraction and transparent, reviewable skill detection.
+- **Explainable results** - Match scores, retrieved-component details, skill overlap, location evidence, and eligibility status.
+- **Offline fallback** - Core search and recommendations continue without a Groq API key.
+- **Evaluation pipeline** - Reproducible Precision@K, Recall@K, MRR, nDCG@K, hit rate, p50/p95 latency, and error-rate reports.
 
-Run commands from the repository root. Python 3.10+ is supported.
+## Architecture
 
-```cmd
+```text
+Streamlit Dashboard
+        |
+        v
+FastAPI REST API
+        |
+        +--> SQLite + SQLAlchemy
+        +--> BM25 keyword search
+        +--> MiniLM + FAISS semantic search
+        +--> RRF + weighted ranking
+        +--> Optional Groq tool-calling agent
+```
+
+See [Architecture](docs/architecture.md) and [API documentation](docs/api.md) for implementation details.
+
+## Evaluation Snapshot
+
+The checked-in benchmark uses four labeled natural-language queries and 120 explicitly synthetic listings.
+
+| Retrieval mode | MRR | Precision@5 | Recall@5 | nDCG@5 | Recall@10 | nDCG@10 | p50 latency |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Keyword | 1.000 | 0.850 | 0.425 | 0.888 | 0.900 | 0.908 | 3.176 ms |
+| Semantic | 1.000 | 1.000 | 0.500 | 1.000 | 0.875 | 0.918 | 40.066 ms |
+| Hybrid | 1.000 | 1.000 | 0.500 | 1.000 | 0.925 | 0.951 | 39.978 ms |
+| Personalized | 1.000 | 1.000 | 0.500 | 1.000 | 0.900 | 0.931 | 41.811 ms |
+
+These values are actual benchmark outputs from the included labeled synthetic dataset, not live recruitment data. Evaluation methodology is documented in [Evaluation](docs/evaluation.md).
+
+## Repository Structure
+
+```text
+backend/app/
+  agent/          Groq orchestration and local fallback
+  api/            FastAPI routes
+  database/       SQLAlchemy models and schemas
+  evaluation/     Metrics and reporting
+  ingestion/      CSV/JSON data sources and normalization
+  ranking/        Explainable recommendation scoring
+  search/         BM25, FAISS, and hybrid retrieval
+  services/       Profile, memory, and ingestion services
+frontend/
+  app.py          Streamlit dashboard
+  styles/         Custom CSS
+data/
+  raw/            Synthetic demo dataset
+  evaluation/     Labeled queries and reports
+scripts/          Dataset, database, index, and evaluation commands
+tests/            Unit and integration tests
+docs/             Architecture, API, and evaluation documentation
+```
+
+## Quick Start on Windows
+
+### 1. Create and activate an environment
+
+```bat
 py -3.10 -m venv venv
 venv\Scripts\activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
-if not exist .env copy .env.example .env
 ```
 
-Edit `.env` if needed. `DATABASE_URL` defaults to SQLite. `GROQ_API_KEY` is optional; leave it empty to use local search and preference handling. Never commit `.env` or expose its key in the frontend.
+### 2. Configure the local environment
 
-Generate and import the explicitly synthetic demo dataset:
+```bat
+copy .env.example .env
+```
 
-```cmd
+For core job search, profile, memory, and recommendations, Groq is optional. Leave `GROQ_API_KEY` empty to use deterministic local assistant search.
+
+```dotenv
+DATABASE_URL=sqlite:///data/careerlens.db
+GROQ_API_KEY=
+GROQ_MODEL=openai/gpt-oss-20b
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+VECTOR_INDEX_DIR=data/indexes
+DEMO_IDENTITY=local-demo
+RRF_CONSTANT=60
+```
+
+Never commit `.env` or expose an API key in frontend code or logs.
+
+### 3. Seed the synthetic job dataset
+
+```bat
 python -m scripts.generate_demo_jobs
 python -m scripts.seed_database
 ```
 
-The ingestion command can read either CSV or JSON:
+The seed command supports CSV or JSON input:
 
-```cmd
+```bat
 python -m scripts.seed_database --input data\raw\jobs.csv --source synthetic-demo
 python -m scripts.seed_database --input path\to\jobs.json --source licensed-dataset
 ```
 
-Build the CPU embedding index (requires internet access the first time to download `all-MiniLM-L6-v2`):
+### 4. Build the semantic index
 
-```cmd
+```bat
 python -m scripts.build_index
 ```
 
-Start the backend and frontend in two separate CMD windows:
+The first build downloads `all-MiniLM-L6-v2`. Subsequent builds reuse and validate the persisted FAISS index.
 
-```cmd
+### 5. Start the application
+
+Open two terminals:
+
+```bat
 venv\Scripts\activate
 uvicorn backend.app.main:app --reload
 ```
 
-```cmd
+```bat
 venv\Scripts\activate
 streamlit run frontend\app.py
 ```
 
-Open `http://localhost:8501`; API documentation is at `http://127.0.0.1:8000/docs`.
+- Streamlit: <http://localhost:8501>
+- FastAPI docs: <http://127.0.0.1:8000/docs>
+- Health check: <http://127.0.0.1:8000/health>
 
-Run tests and the evaluation benchmark:
+PowerShell users can activate with:
 
-```cmd
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+
+## Run Tests and Evaluation
+
+```bat
 pytest -q
 python -m scripts.evaluate_search
 ```
 
-The evaluator writes timestamped reports to `data\evaluation\reports` and stores a copy in SQLite. When using PowerShell, activate with `.\venv\Scripts\Activate.ps1`.
+Evaluation reports are written to `data/evaluation/reports/` as timestamped JSON and CSV files. The latest run is also stored in SQLite.
 
 ## Docker
 
-Create `.env` as above, then:
+Create `.env`, then run:
 
-```cmd
+```bat
 docker compose up --build
 ```
 
-Open the UI at `http://localhost:8501`. Persistent SQLite data and FAISS files are mounted under `data`.
+Docker exposes:
 
-## API examples
+- Streamlit: <http://localhost:8501>
+- FastAPI: <http://localhost:8000>
 
-```cmd
+SQLite and FAISS data are mounted under `data/`.
+
+## Example API Requests
+
+Search jobs:
+
+```bat
 curl -X POST http://127.0.0.1:8000/api/search -H "Content-Type: application/json" -d "{\"query\":\"entry-level AI internships with Python and RAG\",\"mode\":\"hybrid\",\"limit\":10}"
+```
+
+Update the local profile:
+
+```bat
 curl -X PATCH http://127.0.0.1:8000/api/profiles/me -H "Content-Type: application/json" -d "{\"skills\":[\"Python\",\"RAG\"],\"experience_level\":\"Fresher\",\"preferred_locations\":[\"Remote\"]}"
-curl -X POST http://127.0.0.1:8000/api/assistant/chat -H "Content-Type: application/json" -d "{\"message\":\"Only show me remote opportunities\"}"
 ```
 
-See [API reference](docs/api.md), [architecture](docs/architecture.md), and [evaluation methodology](docs/evaluation.md).
+Ask the career assistant:
 
-## Project structure
-
-```text
-backend/app/
-  agent/          bounded Groq tool orchestration and offline fallback
-  api/            FastAPI endpoints
-  database/       SQLAlchemy models, SQLite setup, and Pydantic schemas
-  evaluation/     retrieval metrics
-  ingestion/      CSV/JSON sources and normalization
-  ranking/        transparent candidate-job scoring
-  search/         BM25, FAISS, and hybrid retrieval
-  services/       profile, memory, and ingestion operations
-frontend/         Streamlit dashboard and styles
-data/
-  raw/            synthetic CSV demo data
-  evaluation/     labeled benchmark and generated reports
-scripts/          data generation, ingestion, indexing, evaluation
-tests/            unit and integration coverage
+```bat
+curl -X POST http://127.0.0.1:8000/api/assistant/chat -H "Content-Type: application/json" -d "{\"message\":\"Find remote AI internship opportunities\"}"
 ```
 
-## Known limitations
+## Technology Stack
 
-- The application uses one local demo identity and does not implement authentication or multi-user access controls.
-- Dense semantic search requires the embedding model to be available locally. Hybrid search degrades to BM25 with an explicit warning; semantic-only requests return an error rather than silently mislabeling results.
-- Skill extraction uses a small transparent vocabulary; it is not a resume-parsing or skill-inference model.
-- Groq improves natural-language understanding but is optional. The no-key assistant supports a deliberately small set of deterministic preference and follow-up patterns.
-- The sample benchmark is small and synthetic; it does not establish production ranking quality. LLM tool-selection accuracy is not reported without a labeled tool-call benchmark.
-- No live job-board integrations or scraping are included. Implement approved data adapters using the `JobSource` interface and respect the provider's licensing and terms.
+| Area | Technology |
+|---|---|
+| Backend | Python, FastAPI, Pydantic, SQLAlchemy |
+| Database | SQLite |
+| Search | BM25, Sentence Transformers, FAISS |
+| Ranking | Configurable weighted score with RRF |
+| AI assistant | Groq function calling, local fallback |
+| Frontend | Streamlit, custom CSS |
+| PDF intake | pypdf |
+| Testing | Pytest, FastAPI TestClient |
+| Deployment | Docker, Docker Compose |
+
+## Current Limitations
+
+- Uses a single local demo identity; authentication and multi-user isolation are not implemented.
+- Resume skill extraction uses a transparent vocabulary rather than a trained resume model.
+- Dense semantic search requires an available local Hugging Face model and FAISS.
+- Groq is optional and can be unavailable; the application reports degraded or local-fallback behavior instead of inventing results.
+- The labeled benchmark is intentionally small and synthetic.
+- No live job-board integration or scraping is included.
+- Agent tool-selection and task-completion metrics require separate labeled agent scenarios before meaningful values can be reported.
+
+## License
+
+This repository is provided as a portfolio and educational project. Add a license before publishing it for broader reuse.
