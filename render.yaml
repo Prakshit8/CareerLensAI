@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: careerlens-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:////opt/render/project/src/data/careerlens.db
+      - key: VECTOR_INDEX_DIR
+        value: /opt/render/project/src/data/indexes
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-20b
+      - key: EMBEDDING_MODEL
+        value: sentence-transformers/all-MiniLM-L6-v2
+      - key: DEMO_IDENTITY
+        value: local-demo
+      - key: RRF_CONSTANT
+        value: "60"
+      - key: GROQ_API_KEY
+        sync: false

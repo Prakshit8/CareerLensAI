@@ -179,9 +179,9 @@ SQLite and FAISS data are mounted under `data/`.
 
 Streamlit Community Cloud can host the Streamlit UI, but this project also needs a separately deployed FastAPI backend:
 
-1. Deploy the repository using a FastAPI-capable host such as Render, Railway, Azure App Service, or a VPS.
-2. Configure the backend with `DATABASE_URL=sqlite:///data/careerlens.db`, `GROQ_API_KEY`, `GROQ_MODEL`, and `EMBEDDING_MODEL`.
-3. Ensure the backend is public over HTTPS and its `/health` endpoint is reachable.
+1. Deploy the FastAPI backend on Render using the included `render.yaml` blueprint.
+2. In the Render service environment, set `GROQ_API_KEY` if you want Groq chat. It is optional.
+3. Open the Render service URL and verify `/health` returns `{"status":"ok"}`.
 4. In Streamlit Cloud, create a new app from this GitHub repository.
 5. Set the main file to `frontend/app.py`.
 6. In **App settings > Secrets**, add:
@@ -191,6 +191,16 @@ CAREERLENS_API_URL = "https://your-careerlens-api.example.com"
 ```
 
 The public URL must include no trailing path. If the backend and frontend are deployed at different domains, the Streamlit server sends requests to that URL from the frontend process.
+
+### Render setup
+
+1. Push this repository to GitHub.
+2. In Render, select **New > Blueprint**.
+3. Choose the GitHub repository and approve `render.yaml`.
+4. Set the `GROQ_API_KEY` environment value in the generated `careerlens-api` service. Leave it empty for local/no-key fallback.
+5. Wait for the Docker build and confirm `https://<service-name>.onrender.com/health`.
+
+The backend startup command seeds the synthetic CSV idempotently on each launch and starts Uvicorn on Render's assigned `PORT`.
 
 For a public portfolio demo, use a persistent backend data source or volume:
 
