@@ -1,0 +1,47 @@
+{
+  "name": "careerlens-synthetic-search-v1",
+  "label_method": "Binary relevance labels are based on role-category intent encoded in the synthetic records. Labels reference stable source external IDs; all listings are fictional.",
+  "queries": [
+    {
+      "query": "entry-level AI engineer internship with Python, LLMs and retrieval augmented generation",
+      "profile": {
+        "skills": ["Python", "LLM", "RAG"],
+        "experience_level": "Fresher",
+        "preferred_roles": ["AI Engineer"],
+        "preferred_locations": ["Remote"],
+        "preferred_employment_types": ["Internship"]
+      },
+      "relevant_external_ids": ["synthetic-001", "synthetic-002", "synthetic-003", "synthetic-004", "synthetic-005", "synthetic-006", "synthetic-007", "synthetic-008", "synthetic-009", "synthetic-010"]
+    },
+    {
+      "query": "Python backend API internship with SQL and FastAPI",
+      "profile": {
+        "skills": ["Python", "FastAPI", "SQL"],
+        "experience_level": "Fresher",
+        "preferred_roles": ["Python Backend"],
+        "preferred_employment_types": ["Internship"]
+      },
+      "relevant_external_ids": ["synthetic-051", "synthetic-052", "synthetic-053", "synthetic-054", "synthetic-055", "synthetic-056", "synthetic-057", "synthetic-058", "synthetic-059", "synthetic-060"]
+    },
+    {
+      "query": "search ranking and information retrieval internships using FAISS and RAG",
+      "profile": {
+        "skills": ["Python", "FAISS", "RAG"],
+        "experience_level": "Fresher",
+        "preferred_roles": ["Search Engineer"],
+        "preferred_employment_types": ["Internship"]
+      },
+      "relevant_external_ids": ["synthetic-071", "synthetic-072", "synthetic-073", "synthetic-074", "synthetic-075", "synthetic-076", "synthetic-077", "synthetic-078", "synthetic-079", "synthetic-080"]
+    },
+    {
+      "query": "data analysis internship with SQL Python and product experimentation",
+      "profile": {
+        "skills": ["SQL", "Python", "Data Analysis"],
+        "experience_level": "Fresher",
+        "preferred_roles": ["Product Data Analyst"],
+        "preferred_employment_types": ["Internship"]
+      },
+      "relevant_external_ids": ["synthetic-111", "synthetic-112", "synthetic-113", "synthetic-114", "synthetic-115", "synthetic-116", "synthetic-117", "synthetic-118", "synthetic-119", "synthetic-120"]
+    }
+  ]
+}

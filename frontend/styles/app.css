@@ -1,0 +1,35 @@
+.stApp {
+    background:
+        radial-gradient(ellipse at 85% 0%, rgba(80, 65, 160, 0.18), transparent 38%),
+        #0b1020;
+    color: #eef1fa;
+}
+
+[data-testid="stSidebar"] {
+    background: #10172a;
+    border-right: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+[data-testid="stMetric"] {
+    background: rgba(25, 34, 57, 0.78);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 14px;
+    padding: 18px;
+}
+
+[data-testid="stVerticalBlockBorderWrapper"] {
+    border-color: rgba(148, 163, 184, 0.18);
+    border-radius: 16px;
+}
+
+.hero {
+    padding: 1.4rem 1.6rem;
+    border: 1px solid rgba(129, 140, 248, 0.25);
+    border-radius: 20px;
+    background: linear-gradient(120deg, rgba(53, 56, 115, .45), rgba(24, 34, 57, .72));
+    margin-bottom: 1.2rem;
+}
+
+.muted {
+    color: #aab4ca;
+}

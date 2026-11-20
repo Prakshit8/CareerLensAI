@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.pytest_cache/
+.coverage
+htmlcov/
+data/careerlens.db
+data/indexes/
+data/evaluation/reports/
+data/test-isolated.sqlite3
